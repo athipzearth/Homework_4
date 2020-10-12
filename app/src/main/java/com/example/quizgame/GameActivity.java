@@ -1,11 +1,15 @@
 package com.example.quizgame;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.quizgame.model.WordItem;
@@ -19,14 +23,19 @@ import java.util.Random;
 public class GameActivity extends AppCompatActivity implements View.OnClickListener {
    private ImageView mQuestionImageView;
    private Button[] mButtons = new Button[4];
+   private TextView mScoreText;
 
    private String mAnswerWord;
    private Random mRandom;
+   private Integer mScore = 0;
+   private Integer mCount = 0;
 
    @Override
    protected void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
       setContentView(R.layout.activity_game);
+
+      mScoreText = findViewById(R.id.score_text_view);
 
       mQuestionImageView = findViewById(R.id.question_image_view);
       mButtons[0] = findViewById(R.id.choice_1_button);
@@ -44,6 +53,8 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
    }
 
    private void newQuiz() {
+      mScoreText.setText(Integer.toString(mScore)+" คะแนน");
+
       List<WordItem> mItemList = new ArrayList<>(Arrays.asList(WordListActivity.items));
 
       // สุ่ม index ของคำตอบ (คำถาม)
@@ -81,8 +92,32 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
 
       if (buttonText.equals(mAnswerWord)) {
          Toast.makeText(GameActivity.this, "ถูกต้องครับ", Toast.LENGTH_SHORT).show();
+         mScore++;
       } else {
          Toast.makeText(GameActivity.this, "ผิดครับ", Toast.LENGTH_SHORT).show();
+      }
+
+      mCount++;
+      if(mCount == 5){
+         new AlertDialog.Builder(GameActivity.this)
+                 .setTitle("สรุปผล")
+                 .setMessage("คุณได้ "+Integer.toString(mScore)+" คะแนน\n\nต้องการเล่นเกมใหม่หรือไม่")
+                 .setPositiveButton("YES", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                       newQuiz();
+                       mScore = 0;
+                       mCount = 0;
+                       mScoreText.setText(Integer.toString(mScore)+" คะแนน");
+                    }
+                 })
+                 .setNegativeButton("NO", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                       onBackPressed();
+                    }
+                 })
+                 .show();
       }
 
       newQuiz();
